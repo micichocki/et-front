@@ -6,6 +6,17 @@ import Logout from './components/Logout';
 import CommonLogin from './components/CommonLogin';
 import CommonRegister from './components/CommonRegister';
 import Dashboard from './components/Dashboard';
+import ParentDashboard from './components/ParentDashboard';
+import TutorDashboard from './components/TutorDashboard';
+import StudentDashboard from './components/StudentDashboard'; 
+import ParentProfile from './components/ParentProfile';
+import TutorProfile from './components/TutorProfile';
+import StudentProfile from './components/StudentProfile';
+
+
+
+import Error404 from './components/Error404';
+
 
 function App() {
   return (
@@ -16,6 +27,14 @@ function App() {
           <Route path='/register' element={<CommonPage children={CommonRegister}/>}/>
           <Route path='/logout' element={<Logout/>}/>
           <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} />} />
+          <Route path="/parent-dashboard" element={<ProtectedRoute element={ParentDashboard} />} />
+          <Route path="/tutor-dashboard" element={<ProtectedRoute element={TutorDashboard} />} />
+          <Route path="/student-dashboard" element={<ProtectedRoute element={StudentDashboard} />} />
+          <Route path="/parent-profile" element={<ProtectedRoute element={ParentProfile} />} />
+          <Route path="/tutor-profile" element={<ProtectedRoute element={TutorProfile} />} />
+          <Route path="/student-profile" element={<ProtectedRoute element={StudentProfile} />} />
+
+          {/* <Route path="*" element={<Error404 />} /> */}
         </Routes>
       </Router>
     </div>

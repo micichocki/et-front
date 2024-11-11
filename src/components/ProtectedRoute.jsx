@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { verifyToken } from '../utils/auth'; // Import the new function
+import { verifyToken } from '../utils/auth';
 
 const ProtectedRoute = ({ element: Component }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);

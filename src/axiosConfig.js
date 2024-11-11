@@ -12,8 +12,9 @@ instance.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        return config;
-    },
+        config.headers['Content-Type'] = 'application/json';
+        config.headers['Accept'] = 'application/json';
+        return config;},
     (error) => {
         return Promise.reject(error);
     }
