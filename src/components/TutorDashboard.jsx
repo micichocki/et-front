@@ -4,17 +4,14 @@ import { Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 const TutorDashboard = ({ user }) => {
-
     useEffect(() => {
-        if (!user.tutor_profile.subjects || user.parent_profile.subjects.length === 0) {
+        if (!user.tutor_profile.bio) {
             setRedirect(true);
         }
     }, [user]);
-
     const [redirect, setRedirect] = React.useState(false);
-
     if (redirect) {
-        return <Navigate to="/tutor-profile"  user={user} />;
+        return <Navigate to="/tutor-profile" user={user} />;
     }
 
 

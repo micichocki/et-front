@@ -12,9 +12,6 @@ import StudentDashboard from './components/StudentDashboard';
 import ParentProfile from './components/ParentProfile';
 import TutorProfile from './components/TutorProfile';
 import StudentProfile from './components/StudentProfile';
-
-
-
 import Error404 from './components/Error404';
 
 

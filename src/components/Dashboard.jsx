@@ -11,7 +11,6 @@ const Dashboard = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get('/api/tutoring/user/me/');
-                console.log(response.data);
                 setData(response.data);
             } catch (err) {
                 console.error(err);
@@ -23,8 +22,9 @@ const Dashboard = () => {
     if (!data) {
         return <div>Loading...</div>;
     }
-
+    console.log(data);
     return (
+
         <div>
             {data.roles[0].id === 3 && <ParentDashboard user={data} />}
             {data.roles[0].id === 2 && <TutorDashboard user={data} />}

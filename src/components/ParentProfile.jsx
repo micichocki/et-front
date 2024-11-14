@@ -1,17 +1,45 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "../axiosConfig";
 import {
-  Avatar,
-  Button,
   Card,
   CardBody,
   CardHeader,
   Typography,
 } from "@material-tailwind/react";
 
-function ParentProfile() {
-  const location = useLocation();
-  const { user } = location.state || {};
+function ParentProfile({ user }) {
+  const [userData, setUserData] = useState(user);
+
+  useEffect(() => {
+    if (!user) {
+      axios.get('/api/tutoring/user/me/')
+        .then(response => {
+          setUserData(response.data);
+        })
+        .catch(error => {
+          console.error("There was an error fetching the user data!", error);
+        });
+    }
+  }, [user]);
+
+  user = userData
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const formData =  new FormData(document.getElementById("child_form"));
+    const data = {
+      children: [formData.get("email")],
+    };
+
+    try {
+      const response = await axios.put(`/api/tutoring/parents/${user.parent_profile.id}/`, data);
+    } catch (error) {
+    }
+  };
+
+
+ 
   return (
     <section className="container mx-auto px-8 py-10">
       <Card shadow={false} className="border border-gray-300 rounded-2xl">
@@ -47,7 +75,7 @@ function ParentProfile() {
       </Card>
       <main>
       <h1 className="text-2xl font-bold text-center mt-8 mb-4">To continue using the app please fill additional credentials.</h1>
-            <form className="mt-4">
+            <form className="mt-4" id="child_form">
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Child's Email
@@ -60,12 +88,14 @@ function ParentProfile() {
                   required
                 />
               </div>
+              
               <button
-                                type="submit"
-                                className="flex mx-auto w-50 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                            >
-                               Submit
-                            </button>
+              onClick={handleSubmit}
+              type="submit"
+              className="flex mx-auto w-50 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+              Submit
+          </button>
             </form>
           
         </main>

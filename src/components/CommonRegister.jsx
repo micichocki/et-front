@@ -11,6 +11,8 @@ const CommonRegister = () => {
     const [password, setPassword] = useState('');
     const [confirm_password, setConfirmPassword] = useState('');
     const [roles, setRole] = useState('');
+    const [date_of_birth, setDateOfBirth] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -21,14 +23,17 @@ const CommonRegister = () => {
             setError('Passwords do not match');
             return;
         }
-
+        const capitalizedFirstName = first_name.charAt(0).toUpperCase() + first_name.slice(1);
+        const capitalizedLastName = last_name.charAt(0).toUpperCase() + last_name.slice(1);
         try {
             const response = await axios.post(`${config.backendUrl}/api/register/`, {
                 username,
-                first_name,
-                last_name,
+                first_name: capitalizedFirstName,
+                last_name: capitalizedLastName,
                 password,
                 roles,
+                date_of_birth,
+                phone_number,
         });
         if (response.status === 201) {
                 navigate('/', { state: { message: response.data.message } })
@@ -40,7 +45,7 @@ const CommonRegister = () => {
     };
 
     return (
-        <div>
+        <div className='mt-12'>
             <div className="flex flex-col items-center justify-center px-1 py-5 mx-auto md:h-screen lg:py-0">
                 <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="pt-0 px-6 py-2 space-y-2 md:space-y-6 sm:p-4">
@@ -88,6 +93,38 @@ const CommonRegister = () => {
                                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
                                         value={last_name}
                                         onChange={(e) => setLastName(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="date-of-birth" className="text-left block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date of Birth</label>
+                                <div className="mt-2">
+                                    <input
+                                        id="date-of-birth"
+                                        name="date-of-birth"
+                                        type="date"
+                                        required
+                                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                                        value={date_of_birth}
+                                        onChange={(e) => setDateOfBirth(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="phone-number" className="text-left block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number
+                                    <br/>
+                                <small>  Format: 123-456-789</small>
+                                </label>
+                                <div className="mt-2">
+                                    <input
+                                        id="phone-number"
+                                        name="phone-number"
+                                        type="tel"
+                                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}"
+                                        required
+                                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                                        value={phone_number}
+                                        onChange={(e) => setPhoneNumber(e.target.value)}
                                     />
                                 </div>
                             </div>

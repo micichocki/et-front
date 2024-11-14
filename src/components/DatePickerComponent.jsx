@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const DatePickerComponent = () => {
+const DatePickerComponent = ({ onChange, initialHours }) => {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const [hours, setHours] = useState(
     daysOfWeek.reduce((acc, day) => ({ ...acc, [day]: { start: '', end: '' } }), {})
@@ -8,6 +8,31 @@ const DatePickerComponent = () => {
   const [selectedDays, setSelectedDays] = useState(
     daysOfWeek.reduce((acc, day) => ({ ...acc, [day]: false }), {})
   );
+
+  useEffect(() => {
+    if (initialHours.length > 0) {
+      const initialHoursState = initialHours.reduce((acc, { day_of_week, start_time, end_time }) => {
+        acc[day_of_week] = { start: start_time, end: end_time };
+        return acc;
+      }, {});
+      setHours(prev => ({ ...prev, ...initialHoursState }));
+      setSelectedDays(prev => ({
+        ...prev,
+        ...initialHours.reduce((acc, { day_of_week }) => {
+          acc[day_of_week] = true;
+          return acc;
+        }, {})
+      }));
+    }
+  }, [initialHours]);
+
+  useEffect(() => {
+    const availableHours = Object.entries(hours)
+      .filter(([day, times]) => selectedDays[day])
+      .map(([day, times]) => `${day}:${times.start}-${times.end}`)
+      .join(';');
+    onChange(availableHours);
+  }, [hours, selectedDays, onChange]);
 
   const handleTimeChange = (day, type, value) => {
     setHours(prev => ({

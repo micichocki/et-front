@@ -9,10 +9,9 @@ const ParentDashboard = ({ user }) => {
             setRedirect(true);
         }
     }, [user]);
-
     const [redirect, setRedirect] = React.useState(false);
     if (redirect) {
-        return <Navigate to="/parent-profile" state={{ user }} />;
+        return <Navigate to="/parent-profile" user={user} />;
     }
 
     return (
