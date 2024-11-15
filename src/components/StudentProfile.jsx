@@ -86,7 +86,7 @@ function StudentProfile({ user }) {
     <div className="h-48 bg-indigo-600 rounded-t-2xl flex flex-col justify-center items-center text-white relative">
       <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white absolute top-10">
         <img
-          src={user?.student_profile?.avatar || "/path/to/default-avatar.jpg"}
+          src={user?.avatar || "/path/to/default-avatar.jpg"}
           alt="Student's Avatar"
           className="w-full h-full object-cover"
         />
