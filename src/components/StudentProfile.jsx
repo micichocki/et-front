@@ -114,14 +114,19 @@ function StudentProfile({ user }) {
           <strong>Education Level:</strong> {user?.student_profile?.education_level?.level || "N/A"}
         </p>
         <p className="text-gray-600 text-sm mt-2">
-          <strong>Available Hours: </strong>    <br/>    {user?.student_profile?.available_hours?.map(hour => `${hour.day_of_week}: ${hour.start_time} - ${hour.end_time}`).join(", ") || "N/A"}
-
-        </p>
-      </div>
+          <strong>Available Hours: </strong>
+          <br/>
+          {Array.isArray(userData?.tutor_profile?.available_hours)
+              ? userData.tutor_profile.available_hours.map(hour =>
+                  `${hour.day_of_week}: ${hour.start_time} - ${hour.end_time}`
+              ).join(", ")
+              : "N/A"}
+      </p>
     </div>
   </div>
-      <main>
-        <h1 className="text-2xl font-bold text-center mt-8 mb-4">{mainMessage}</h1>
+    </div>
+  <main>
+    <h1 className="text-2xl font-bold text-center mt-8 mb-4">{mainMessage}</h1>
         <form className="mt-4" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="bio" className="block text-sm font-medium text-gray-700">

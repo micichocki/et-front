@@ -10,7 +10,7 @@ const DatePickerComponent = ({ onChange, initialHours }) => {
   );
 
   useEffect(() => {
-    if (initialHours.length > 0) {
+    if (Array.isArray(initialHours) && initialHours.length > 0) {
       const initialHoursState = initialHours.reduce((acc, { day_of_week, start_time, end_time }) => {
         acc[day_of_week] = { start: start_time, end: end_time };
         return acc;
@@ -29,8 +29,8 @@ const DatePickerComponent = ({ onChange, initialHours }) => {
   useEffect(() => {
     const availableHours = Object.entries(hours)
       .filter(([day, times]) => selectedDays[day])
-      .map(([day, times]) => `${day}:${times.start}-${times.end}`)
-      .join(';');
+        .map(([day, times]) => `${day}:${times.start}-${times.end}`)
+        .join(';');
     onChange(availableHours);
   }, [hours, selectedDays, onChange]);
 
