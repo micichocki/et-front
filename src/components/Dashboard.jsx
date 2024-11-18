@@ -23,7 +23,6 @@ const Dashboard = () => {
                 } else if (userData.roles[0].id === 1) {
                     lessonsResponse = await axios.get('/api/tutoring/student/lessons/');
                 }
-                console.log(lessonsResponse.data);
                 setLessons(lessonsResponse.data);
             } catch (err) {
                 console.error(err);

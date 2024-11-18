@@ -39,7 +39,7 @@ const ProtectedRoute = ({ element: Component }) => {
   <div>
   <Navbar user={data} />
   <Component user={data} />
-    <ChatWidget />
+    <ChatWidget user={data} />
   </div> : 
   <Navigate to="/" />;
 

@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import axios from '../axiosConfig';
 
-const ChatWidget = () => {
+const ChatWidget = ({ user }) => {
     const [socket, setSocket] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [recipient, setRecipient] = useState('');
+    const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:8000/ws/chat/');
-        setSocket(ws);
-
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            setMessages((prevMessages) => [...prevMessages, message]);
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get('/api/tutoring/users-with-messages/');
+                setUsers(response.data);
+            } catch (err) {
+                console.error(err);
+            }
         };
-
-        ws.onclose = () => {
-            console.log('WebSocket connection closed');
-        };
-
-        return () => {
-            ws.close();
-        };
+        fetchUsers();
     }, []);
+
+    useEffect(() => {
+        if (user && recipient) {
+            const ws = new WebSocket(`ws://localhost:8000/ws/chat/${encodeURIComponent(user.email)}/${recipient}/`);
+            setSocket(ws);
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                setMessages((prevMessages) => [...prevMessages, message]);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+            };
+
+            return () => {
+                ws.close();
+            };
+        }
+    }, [user, recipient]);
 
     const toggleChat = () => {
         setIsOpen(!isOpen);
@@ -41,6 +57,16 @@ const ChatWidget = () => {
         }
     };
 
+    const handleUserClick = async (username) => {
+        setRecipient(username);
+        try {
+            const response = await axios.get(`/api/tutoring/messages/?recipient=${username}`);
+            setMessages(response.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <div className="fixed bottom-4 right-4">
             {isOpen ? (
@@ -51,35 +77,43 @@ const ChatWidget = () => {
                             X
                         </button>
                     </div>
-                    <div className="flex-1 p-2 overflow-y-auto bg-indigo-100">
-                        {messages.map((message, index) => (
-                            <div key={index} className={`p-2 ${message.sender === 'You' ? 'text-right' : 'text-left'}`}>
-                                <strong>{message.sender}:</strong> {message.content}
+                    <div className="flex">
+                        <div className="w-1/3 bg-indigo-200 p-2 overflow-y-auto">
+                            {users.map((user) => (
+                                <div
+                                    key={user.username}
+                                    className="p-2 cursor-pointer hover:bg-indigo-300"
+                                    onClick={() => handleUserClick(user.username)}
+                                >
+                                    {user.username}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="w-2/3 flex flex-col">
+                            <div className="flex-1 p-2 overflow-y-auto bg-indigo-100">
+                                {messages.map((message, index) => (
+                                    <div key={index} className={`p-2 ${message.sender === 'You' ? 'text-right' : 'text-left'}`}>
+                                        <strong>{message.sender}:</strong> {message.content}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                    <div className="p-2 border-t border-indigo-700">
-                        <input
-                            type="text"
-                            placeholder="Recipient username"
-                            className="w-full p-2 mb-2 border rounded"
-                            value={recipient}
-                            onChange={(e) => setRecipient(e.target.value)}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Type a message..."
-                            className="w-full p-2 border rounded"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        />
-                        <button
-                            onClick={handleSendMessage}
-                            className="w-full mt-2 p-2 bg-indigo-600 text-white rounded"
-                        >
-                            Send
-                        </button>
+                            <div className="p-2 border-t border-indigo-700">
+                                <input
+                                    type="text"
+                                    placeholder="Type a message..."
+                                    className="w-full p-2 border rounded"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    className="w-full mt-2 p-2 bg-indigo-600 text-white rounded"
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             ) : (
