@@ -3,7 +3,6 @@ import axios from 'axios';
 import config from '../config';
 import { useNavigate } from "react-router-dom";
 
-
 const CommonRegister = () => {
     const [username, setUsername] = useState('');
     const [first_name, setFirstName] = useState('');
@@ -13,9 +12,9 @@ const CommonRegister = () => {
     const [roles, setRole] = useState('');
     const [date_of_birth, setDateOfBirth] = useState('');
     const [phone_number, setPhoneNumber] = useState('');
+    const [city, setCity] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -34,13 +33,13 @@ const CommonRegister = () => {
                 roles,
                 date_of_birth,
                 phone_number,
-        });
-        if (response.status === 201) {
-                navigate('/', { state: { message: response.data.message } })
-        }
+                city,
+            });
+            if (response.status === 201) {
+                navigate('/', { state: { message: response.data.message } });
+            }
         } catch (error) {
-
-        setError(error.response?.data?.error || 'Registration failed');
+            setError(error.response?.data?.error || 'Registration failed');
         }
     };
 
@@ -113,7 +112,7 @@ const CommonRegister = () => {
                             <div>
                                 <label htmlFor="phone-number" className="text-left block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number
                                     <br/>
-                                <small>  Format: 123-456-789</small>
+                                    <small>  Format: 123-456-789</small>
                                 </label>
                                 <div className="mt-2">
                                     <input
@@ -125,6 +124,20 @@ const CommonRegister = () => {
                                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
                                         value={phone_number}
                                         onChange={(e) => setPhoneNumber(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="city" className="text-left block mb-2 text-sm font-medium text-gray-900 dark:text-white">City</label>
+                                <div className="mt-2">
+                                    <input
+                                        id="city"
+                                        name="city"
+                                        type="text"
+                                        required
+                                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                                        value={city}
+                                        onChange={(e) => setCity(e.target.value)}
                                     />
                                 </div>
                             </div>

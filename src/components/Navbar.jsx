@@ -65,6 +65,10 @@ const Navbar = ({ user }) => {
                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Student
                                         Profile</a>
                                 )}
+                                {user && user.tutor_profile && user.tutor_profile.id && (
+                                    <a href="/search"
+                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Find Tutors</a>
+                                )}
                                 <a href="/logout"
                                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>
                             </div>
@@ -129,6 +133,10 @@ const Navbar = ({ user }) => {
                         <a href="/student-profile"
                            className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Student
                             Profile</a>
+                    )}
+                    {user && user.tutor_profile && user.tutor_profile.id && (
+                        <a href="/create-lesson"
+                           className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Create New Lesson</a>
                     )}
                     <a href="/logout"
                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import DatePickerComponent from './DatePickerComponent';
+import avatarImage from "../assets/images/avatar.png";
 
 function TutorProfile({ user }) {
   const [userData, setUserData] = useState(user);
@@ -12,6 +13,7 @@ function TutorProfile({ user }) {
   const [invalidTimes, setInvalidTimes] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [subjectPrices, setSubjectPrices] = useState({});
 
   useEffect(() => {
     if (!user) {
@@ -42,12 +44,28 @@ function TutorProfile({ user }) {
           if (userData && userData.tutor_profile && userData.tutor_profile.subjects) {
             setSelectedSubjects(userData.tutor_profile.subjects.map(subject => subject.name || subject));
           }
-
+          if (userData && userData.tutor_profile && userData.tutor_profile.subject_prices) {
+            const prices = userData.tutor_profile.subject_prices.reduce((acc, { subject, price_min, price_max }) => {
+              acc[subject.name] = { min: price_min, max: price_max };
+              return acc;
+            }, {});
+            setSubjectPrices(prices);
+          }
         })
         .catch(error => {
           console.error("There was an error fetching the subjects!", error);
         });
   }, [userData]);
+
+  const handlePriceChange = (subjectName, priceType, value) => {
+    setSubjectPrices(prevState => ({
+      ...prevState,
+      [subjectName]: {
+        ...prevState[subjectName],
+        [priceType]: value
+      }
+    }));
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -55,6 +73,17 @@ function TutorProfile({ user }) {
       setError("Please correct the invalid time ranges before submitting.");
       return;
     }
+
+    const priceErrors = selectedSubjects.filter(subject => {
+      const prices = subjectPrices[subject];
+      return !(prices && prices.min && prices.max && parseFloat(prices.min) <= parseFloat(prices.max));
+    });
+
+    if (priceErrors.length > 0) {
+      setError("Please provide valid prices for all selected subjects.");
+      return;
+    }
+
     const form = event.target;
     const formData = new FormData(form);
 
@@ -67,15 +96,24 @@ function TutorProfile({ user }) {
         }))
         : undefined;
 
+    const subjectPricesArray = selectedSubjects.map(subject => ({
+      name: subject,
+      min_price: subjectPrices[subject]?.min || "",
+      max_price: subjectPrices[subject]?.max || "",
+    }));
+
     const data = {
       bio: formData.get("bio"),
       available_hours: availableHours,
-      subjects: selectedSubjects, // Send only the array of subject names
+      subject_prices: subjectPricesArray,
+      city: formData.get("city"), // Pobierz wartość pola 'city'
+      is_remote: formData.get("is_remote") === "on", // Pobierz wartość checkboxa
       ...(updatedWorkingExperience && { working_experience: updatedWorkingExperience }),
     };
+
     try {
       if (userData && userData.tutor_profile) {
-        const response = await axios.put(`/api/tutoring/tutors/${userData.tutor_profile.id}/`, data);
+        await axios.put(`/api/tutoring/tutors/${userData.tutor_profile.id}/`, data);
         setSuccess("Profile updated successfully!");
         setUserData((prevUserData) => ({
           ...prevUserData,
@@ -104,68 +142,114 @@ function TutorProfile({ user }) {
   return (
       <section className="container mx-auto px-8 py-10">
         <div className="border border-gray-300 rounded-2xl shadow-md">
-          <div
-              className="h-48 bg-indigo-600 rounded-t-2xl flex flex-col justify-center items-center text-white relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white absolute top-10">
-              <img
-                  src={user?.avatar || "/path/to/default-avatar.jpg"}
-                  alt="Tutor's Avatar"
-                  className="w-full h-full object-cover"
-              />
+          <div className="relative bg-indigo-600 rounded-t-2xl p-6 text-center text-white">
+            <div className="relative inline-block">
+              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white mx-auto shadow-lg">
+                <img
+                    src={user?.avatar || avatarImage}
+                    alt="Tutor's Avatar"
+                    className="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                  className="absolute bottom-0 right-0 bg-green-500 w-5 h-5 rounded-full border-2 border-white shadow-md"
+              ></div>
             </div>
-            <h4 className="text-2xl font-semibold mt-24">
+            <h4 className="mt-4 text-2xl font-bold">
               {userData ? `${userData.first_name} ${userData.last_name}` : "[Tutor's Name]"}
             </h4>
-
-            <p className="text-lg font-light">
-              {userData ? userData.email : "[Tutor's Email]"}
-            </p>
+            <p className="text-lg font-light">{userData ? userData.email : "[Tutor's Email]"}</p>
           </div>
-          <div className="p-6 space-y-4">
+
+          <div className="p-6 space-y-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="border border-indigo-300 p-4 rounded-lg">
-              <p className="text-gray-600 text-sm">
-                <strong>Bio:</strong> {userData?.tutor_profile?.bio || "N/A"}
-              </p>
-              <p className="text-gray-600 text-sm mt-2">
-                <strong>Working experience:</strong>
-                {Array.isArray(userData?.tutor_profile?.working_experience) && userData.tutor_profile.working_experience.length > 0 ? (
+              <h5 className="text-indigo-600 font-bold text-lg mb-4">Available Hours</h5>
+              <ul className="space-y-2">
+                {Array.isArray(userData?.tutor_profile?.available_hours)
+                    ? userData.tutor_profile.available_hours.map((hour, index) => (
+                        <li
+                            key={index}
+                            className="bg-indigo-50 border border-indigo-200 p-3 rounded-md shadow-sm text-gray-700 text-md"
+                        >
+                          <strong>{hour.day_of_week}:</strong> {hour.start_time} - {hour.end_time}
+                        </li>
+                    ))
+                    : "N/A"}
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border border-indigo-300 p-4 rounded-lg">
+                <h5 className="text-indigo-600 font-bold text-lg">Bio</h5>
+                <p className="mt-2 text-gray-600 text-sm">{userData?.tutor_profile?.bio || "N/A"}</p>
+              </div>
+
+              <div className="border border-indigo-300 p-4 rounded-lg">
+                <h5 className="text-indigo-600 font-bold text-lg">Working Experience</h5>
+                {Array.isArray(userData?.tutor_profile?.working_experience) &&
+                userData.tutor_profile.working_experience.length > 0 ? (
                     userData.tutor_profile.working_experience.map((experience, index) => (
-                        <div key={index}>
-                          <p>Title: {experience.position || "N/A"}</p>
-                          <p>Description: {experience.description || "N/A"}</p>
-                          <p>Start Date: {experience.start_date || "N/A"}</p>
-                          {experience.end_date && <p>End Date: {experience.end_date}</p>}
-                          <p>Description: {experience.description || "N/A"}</p>
-                          <br></br>
+                        <div key={index} className="mt-2 text-gray-600 text-sm">
+                          <p>
+                            <strong>Title:</strong> {experience.position || "N/A"}
+                          </p>
+                          <p>
+                            <strong>Description:</strong> {experience.description || "N/A"}
+                          </p>
+                          <p>
+                            <strong>Start Date:</strong> {experience.start_date || "N/A"}
+                          </p>
+                          {experience.end_date && (
+                              <p>
+                                <strong>End Date:</strong> {experience.end_date}
+                              </p>
+                          )}
+                          <hr className="my-2"/>
+
+                          <h5 className="text-indigo-600 font-bold text-lg">User Credentials</h5>
+                          <p>
+                            <strong>City:</strong> {userData.city}
+                          </p>
+                          <p>
+                            <strong>Phone Number:</strong> {userData.phone_number || "N/A"}
+                          </p>
+                          <label htmlFor="is_remote" className="ml-2 text-sm font-medium text-gray-700">
+                            Willing to work remotely
+                          </label>
+                          <input
+                              type="checkbox"
+                              id="is_remote"
+                              name="is_remote"
+                              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                              disabled
+                              defaultChecked={userData?.tutor_profile?.is_remote || false}
+                          />
                         </div>
                     ))
                 ) : (
-                    "N/A"
+                    <p className="text-gray-600">N/A</p>
                 )}
-              </p>
-              <p className="text-gray-600 text-sm mt-2">
-                <p className="text-gray-600 text-sm mt-2">
-                  <strong>Subjects:</strong> {selectedSubjects.map(subject =>
-                    typeof subject === "string" ? subject : subject.name
-                ).join(", ") || "N/A"}
-                </p>
+              </div>
 
-              </p>
-              <p className="text-gray-600 text-sm mt-2">
-                <strong>Available Hours: </strong>
-                <br/>
-                {Array.isArray(userData?.tutor_profile?.available_hours)
-                    ? userData.tutor_profile.available_hours.map(hour =>
-                        `${hour.day_of_week}: ${hour.start_time} - ${hour.end_time}`
-                    ).join(", ")
-                    : "N/A"}
-              </p>
+              <div className="border border-indigo-300 p-4 rounded-lg">
+                <h5 className="text-indigo-600 font-bold text-lg">Subjects</h5>
+                <p className="mt-2 text-gray-600 text-sm">
+                  {selectedSubjects.map((subject) =>
+                      typeof subject === "string" ? subject : subject.name
+                  ).join(", ") || "N/A"}
+                </p>
+              </div>
 
             </div>
           </div>
         </div>
+
         <main>
           <h1 className="text-2xl font-bold text-center mt-8 mb-4">{mainMessage}</h1>
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+            <p className="font-bold">Note:</p>
+            <p>Filling in this data will increase your chances of being found by students!</p>
+          </div>
           <form className="mt-4" onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
@@ -302,46 +386,107 @@ function TutorProfile({ user }) {
               </button>
             </div>
             <div className="mb-4">
-              <label htmlFor="subjects" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="subjects" className="block text-sm font-medium text-gray-700 text-center">
                 Please select the subjects you are specialized in
               </label>
-              <div
-                  className="mt-1 block px-2 py-0.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm w-full max-w-md mx-auto">
+              <div className="mt-4 space-y-6 flex flex-col items-center">
                 {subjects.map((subject) => (
-                    <div key={subject.id} className="flex items-center">
-                      <input
-                          type="checkbox"
-                          id={`subject-${subject.id}`}
-                          name="subjects"
-                          value={subject.name}
-                          className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                          checked={selectedSubjects.includes(subject.name)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedSubjects(prev => [...new Set([...prev, subject.name])]);
-                            } else {
-                              setSelectedSubjects(
-                                  selectedSubjects.filter((s) => s !== subject.name)
-                              );
-                            }
-                          }}
-                      />
-                      <label
-                          htmlFor={`subject-${subject.id}`}
-                          className="ml-2 block text-sm text-gray-900"
-                      >
-                        {subject.name}
-                      </label>
+                    <div key={subject.id} className="flex items-center justify-between w-full max-w-lg">
+                      <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            id={`subject-${subject.id}`}
+                            name="subjects"
+                            value={subject.name}
+                            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            checked={selectedSubjects.includes(subject.name)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSubjects(prev => [...new Set([...prev, subject.name])]);
+                              } else {
+                                setSelectedSubjects(selectedSubjects.filter(s => s !== subject.name));
+                              }
+                            }}
+                        />
+                        <label htmlFor={`subject-${subject.id}`} className="text-sm text-gray-900">
+                          {subject.name}
+                        </label>
+                      </div>
+                      {selectedSubjects.includes(subject.name) && (
+                          <div className="flex items-center space-x-4 ml-4">
+                            <div className="flex items-center space-x-1">
+                              <input
+                                  type="number"
+                                  placeholder="Min Price"
+                                  value={subjectPrices[subject.name]?.min || ""}
+                                  onChange={(e) => handlePriceChange(subject.name, "min", e.target.value)}
+                                  className="mt-1 w-28 border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                  min="0"
+                                  required
+                              />
+                              <span className="text-gray-500">PLN</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <input
+                                  type="number"
+                                  placeholder="Max Price"
+                                  value={subjectPrices[subject.name]?.max || ""}
+                                  onChange={(e) => handlePriceChange(subject.name, "max", e.target.value)}
+                                  className="mt-1 w-28 border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                  min="0"
+                                  required
+                              />
+                              <span className="text-gray-500">PLN</span>
+                            </div>
+                            <input
+                                type="hidden"
+                                name={`subject-prices-${subject.name}-min`}
+                                value={subjectPrices[subject.name]?.min || ""}
+                            />
+                            <input
+                                type="hidden"
+                                name={`subject-prices-${subject.name}-max`}
+                                value={subjectPrices[subject.name]?.max || ""}
+                            />
+                          </div>
+                      )}
                     </div>
                 ))}
-
               </div>
             </div>
             <div className="mb-4">
               <label htmlFor="available-hours" className="block text-sm font-medium text-gray-700">
                 Select approximate time you are available
               </label>
-              <DatePickerComponent onChange={setAvailableHours} initialHours={initialAvailableHours} setInvalidTimes={setInvalidTimes} />
+              <DatePickerComponent onChange={setAvailableHours} initialHours={initialAvailableHours}
+                                   setInvalidTimes={setInvalidTimes}/>
+            </div>
+            <div className="mt-4 space-y-6 flex flex-col items-center">
+              <div className="mb-4">
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                  City
+                </label>
+                <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    className="mt-1 block px-2 py-0.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm w-full max-w-md mx-auto"
+                    defaultValue={userData?.city || ""}
+                />
+              </div>
+
+              <div className="mb-4 flex items-center">
+                <input
+                    type="checkbox"
+                    id="is_remote"
+                    name="is_remote"
+                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    defaultChecked={userData?.tutor_profile?.is_remote || false}
+                />
+                <label htmlFor="is_remote" className="ml-2 block text-sm font-medium text-gray-700">
+                  Willing to work remotely
+                </label>
+              </div>
             </div>
             {error && (
                 <div className="mb-4 text-red-500 text-sm">
@@ -350,7 +495,7 @@ function TutorProfile({ user }) {
             )}
             <button
                 type="submit"
-                className="flex mx-auto w-50 justify-center rounded-md bg-indigo-600 px-3 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="flex mx-auto mt-4 w-50 justify-center rounded-md bg-indigo-600 px-3 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Submit
             </button>

@@ -1,19 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import axios from '../axiosConfig';
 
-const ChatWidget = ({ user }) => {
+const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
     const [socket, setSocket] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const [recipient, setRecipient] = useState('');
+    const [recipient, setRecipient] = useState(initialRecipient || '');
     const [users, setUsers] = useState([]);
-    const messagesEndRef = useRef(null); // Reference to the end of the messages container
+    const messagesEndRef = useRef(null);
+
+    useImperativeHandle(ref, () => ({
+        startChatWith: (tutor) => {
+            setUsers((prevUsers) => {
+                if (!prevUsers.some((u) => u.email === tutor.email)) {
+                    return [...prevUsers, tutor];
+                }
+                return prevUsers;
+            });
+            handleRecipientChange(tutor.email).then(r =>(setIsOpen(true)));
+        },
+    }));
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
                 const response = await axios.get('/api/tutoring/users-with-messages/');
+                console.log(response.data)
                 setUsers(response.data);
             } catch (err) {
                 console.error(err);
@@ -24,47 +37,27 @@ const ChatWidget = ({ user }) => {
 
     useEffect(() => {
         if (user && recipient) {
-            if (socket) {
-                socket.close();
-            }
+            if (socket) socket.close();
+            const wsUrl = `ws://localhost:8000/ws/chat/?sender=${user.email}&recipient=${recipient}`;
+            const newSocket = new WebSocket(wsUrl);
 
-            const wsUrl = `ws://localhost:8000/ws/chat/?sender=${encodeURIComponent(user.email)}&recipient=${encodeURIComponent(recipient)}`;
-            const ws = new WebSocket(wsUrl);
-            setSocket(ws);
+            setSocket(newSocket);
 
-            ws.onopen = () => {
-                console.log('WebSocket connection opened');
-            };
-
-            ws.onmessage = (event) => {
+            newSocket.onmessage = (event) => {
                 const message = JSON.parse(event.data);
-                setMessages((prevMessages) => [...prevMessages, message]);
+                setMessages((prev) => [...prev, message]);
             };
 
-            ws.onclose = () => {
-                console.log('WebSocket connection closed');
-            };
-
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-
-            return () => {
-                if (ws) {
-                    ws.close();
-                }
-            };
+            return () => newSocket.close();
         }
     }, [user, recipient]);
 
-    // Scroll to the bottom of the messages
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
-    // Scroll to the bottom when messages change
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -72,7 +65,6 @@ const ChatWidget = ({ user }) => {
     const toggleChat = () => {
         setIsOpen(!isOpen);
         if (!isOpen) {
-            // Ensure the chat scrolls to the bottom when opened
             setTimeout(scrollToBottom, 0);
         }
     };
@@ -204,6 +196,6 @@ const ChatWidget = ({ user }) => {
             )}
         </div>
     );
-};
+});
 
 export default ChatWidget;
