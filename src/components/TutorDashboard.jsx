@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import axios from '../axiosConfig';
 import LessonSlider from "./LessonSlider";
 
 const TutorDashboard = ({ user, lessons = [] }) => {
     const [redirect, setRedirect] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showPopup, setShowPopup] = useState(false);
+    const [tutorLessons, setTutorLessons] = useState(lessons);
 
     const navigate = useNavigate();
 
@@ -14,6 +16,22 @@ const TutorDashboard = ({ user, lessons = [] }) => {
             setRedirect(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (tutorLessons.length === 0) {
+                try {
+                    let lessonsResponse;
+                    lessonsResponse = await axios.get('/api/tutoring/tutor/lessons/');
+
+                    setTutorLessons(lessonsResponse.data);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        };
+        fetchData();
+    }, [tutorLessons]);
 
     if (redirect) {
         return <Navigate to="/tutor-profile" user={user} />;
@@ -57,7 +75,7 @@ const TutorDashboard = ({ user, lessons = [] }) => {
 
     return (
         <div>
-            <LessonSlider lessons={lessons}></LessonSlider>
+            <LessonSlider lessons={tutorLessons} isTutor={true}></LessonSlider>
             <div className="container mx-auto px-4 py-8">
 
                 <div className="text-center mb-4">
@@ -99,7 +117,7 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                         <div key={`empty-${i}`} className="h-32"></div>
                     ))}
                     {days.map((day) => {
-                        const lessonsForDay = lessons
+                        const lessonsForDay = tutorLessons
                             .filter((lesson) => new Date(lesson.start_time).getDate() === day)
                             .sort((a, b) => {
                                 const now = new Date();

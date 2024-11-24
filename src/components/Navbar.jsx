@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import avatarImage from '../assets/images/avatar.png';
 
-const Navbar = ({ user }) => {
+const Navbar = ({ user, notificationCount }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -65,9 +66,13 @@ const Navbar = ({ user }) => {
                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Student
                                         Profile</a>
                                 )}
-                                {user && user.tutor_profile && user.tutor_profile.id && (
+                                {((user && user.student_profile && user.student_profile.id) || (user && user.parent_profile && user.parent_profile.id)) && (
                                     <a href="/search"
                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Find Tutors</a>
+                                )}
+                                {((user && user.student_profile && user.student_profile.id) || (user && user.parent_profile && user.parent_profile.id)) && (
+                                    <a href="/pending-lessons"
+                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Pending Lessons</a>
                                 )}
                                 <a href="/logout"
                                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>
@@ -87,6 +92,11 @@ const Navbar = ({ user }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round"
                                       d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
                             </svg>
+                            {notificationCount > 0 && (
+                                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                    {notificationCount}
+                                </span>
+                            )}
                         </button>
 
                         <div className="relative ml-3">
@@ -94,7 +104,7 @@ const Navbar = ({ user }) => {
                                 <button type="button" className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-white" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                     <span className="absolute -inset-1.5"></span>
                                     <span className="sr-only">Open user menu</span>
-                                    <img className="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt=""></img>
+                                    <img className="h-8 w-8 rounded-full" src={user?.avatar || avatarImage} alt=""></img>
                                 </button>
                             </div>
                         </div>
@@ -137,6 +147,10 @@ const Navbar = ({ user }) => {
                     {user && user.tutor_profile && user.tutor_profile.id && (
                         <a href="/create-lesson"
                            className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Create New Lesson</a>
+                    )}
+                    {((user && user.student_profile && user.student_profile.id) || (user && user.parent_profile && user.parent_profile.id)) && (
+                        <a href="/pending-lessons"
+                           className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Pending Lessons</a>
                     )}
                     <a href="/logout"
                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>

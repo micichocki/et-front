@@ -1,28 +1,161 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import axios from "../axiosConfig";
+import LessonSlider from "./LessonSlider";
 
-import { Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+const StudentDashboard = ({ user, lessons = [] }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [showPopup, setShowPopup] = useState(false);
+    const [studentLessons, setStudentLessons] = useState(lessons);
 
-const StudentDashboard = ({ user }) => {
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user.student_profile.education_level || user.student_profile.education_level) {
-            setRedirect(true);
-        }
-    }, [user]);
+        const fetchLessons = async () => {
+            if (studentLessons.length === 0) {
+                try {
+                    const response = await axios.get("/api/tutoring/student/lessons/");
+                    setStudentLessons(response.data);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        };
+        fetchLessons();
+    }, [studentLessons]);
 
-    const [redirect, setRedirect] = React.useState(false);
+    const navigateToLessonDetails = (lessonId) => {
+        navigate(`/api/tutoring/lessons/${lessonId}`);
+    };
 
-    if (redirect) {
-        return <Navigate to="/student-profile"  user={user} />;
-    }
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        return new Date(year, month + 1, 0).getDate();
+    };
+
+    const getFirstDayOfMonth = (date) => {
+        return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    };
+
+    const prevMonth = () => {
+        setCurrentDate((prevDate) => new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1));
+    };
+
+    const nextMonth = () => {
+        setCurrentDate((prevDate) => new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1));
+    };
+
+    const goToCurrentMonth = () => {
+        setCurrentDate(new Date());
+    };
+
+    const daysInMonth = getDaysInMonth(currentDate);
+    const firstDayOfMonth = getFirstDayOfMonth(currentDate);
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    const currentDay = new Date().getDate();
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
     return (
-        <div className="student-profile">
-            <h2>{user.name}</h2>
-            <p>Age: {user.age}</p>
-            <p>Major: {user.major}</p>
-            <p>GPA: {user.gpa}</p>
+        <div>
+            <LessonSlider lessons={studentLessons} isStudent={true}></LessonSlider>
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center mb-4">
+                    <button
+                        onClick={goToCurrentMonth}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700"
+                    >
+                        Go to Current Month
+                    </button>
+                </div>
+                <div className="relative mb-4 flex justify-between items-center">
+                    <button
+                        onClick={prevMonth}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700"
+                    >
+                        &lt;
+                    </button>
+                    <div className="text-xl font-semibold text-indigo-600 mx-4">
+                        {currentDate.toLocaleString("en-US", { month: "long", year: "numeric" })}
+                    </div>
+                    <button
+                        onClick={nextMonth}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700"
+                    >
+                        &gt;
+                    </button>
+                </div>
+                <div className="grid grid-cols-7 gap-4 border border-gray-300 rounded-xl shadow-lg p-6 bg-white">
+                    <div className="text-center font-semibold text-gray-600">Sun</div>
+                    <div className="text-center font-semibold text-gray-600">Mon</div>
+                    <div className="text-center font-semibold text-gray-600">Tue</div>
+                    <div className="text-center font-semibold text-gray-600">Wed</div>
+                    <div className="text-center font-semibold text-gray-600">Thu</div>
+                    <div className="text-center font-semibold text-gray-600">Fri</div>
+                    <div className="text-center font-semibold text-gray-600">Sat</div>
+
+                    {Array.from({ length: firstDayOfMonth }, (_, i) => (
+                        <div key={`empty-${i}`} className="h-32"></div>
+                    ))}
+                    {days.map((day) => {
+                        const lessonsForDay = studentLessons.filter(
+                            (lesson) => new Date(lesson.start_time).getDate() === day
+                        );
+
+                        const isToday =
+                            day === currentDay &&
+                            currentMonth === currentDate.getMonth() &&
+                            currentYear === currentDate.getFullYear();
+                        return (
+                            <div
+                                key={day}
+                                className={`flex flex-col items-center justify-start h-48 border rounded-lg shadow-sm p-3 ${
+                                    lessonsForDay.length
+                                        ? "bg-indigo-100 text-indigo-900 border-indigo-300"
+                                        : "bg-gray-100 text-gray-500 border-gray-200"
+                                } ${isToday ? "bg-indigo-500 text-white" : ""} relative`}
+                            >
+                                <span
+                                    className={`absolute top-2 left-2 text-lg font-semibold ${isToday ? "text-white" : ""}`}
+                                >
+                                    {day}
+                                </span>
+                                {lessonsForDay.length > 0 ? (
+                                    <ul className="text-sm mt-6 space-y-1 w-full">
+                                        {lessonsForDay.map((lesson, index) => (
+                                            <li
+                                                key={index}
+                                                className="cursor-pointer hover:bg-indigo-200 hover:text-indigo-800 transition-colors p-1 rounded"
+                                                onClick={() => navigateToLessonDetails(lesson.id)}
+                                            >
+                                                <span className="font-medium">{lesson.subject.name}</span>
+                                                <span className="block text-xs">
+                                                    {new Date(lesson.start_time).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}{" "}
+                                                    -{" "}
+                                                    {new Date(lesson.end_time).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </span>
+                                                <span className="block text-xs text-gray-600">
+                                                    Tutor: {lesson.tutor.user_full_name}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span className="mt-6 text-sm">No lessons</span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 };

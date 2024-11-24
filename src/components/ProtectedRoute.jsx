@@ -42,7 +42,6 @@ const ProtectedRoute = ({ element: Component }) => {
     }
   };
   if (isAuthenticated === null) return <div>Loading...</div>;
-
   return isAuthenticated ?
       <div>
         <Navbar user={data} />

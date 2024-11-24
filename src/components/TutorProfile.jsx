@@ -106,8 +106,8 @@ function TutorProfile({ user }) {
       bio: formData.get("bio"),
       available_hours: availableHours,
       subject_prices: subjectPricesArray,
-      city: formData.get("city"), // Pobierz wartość pola 'city'
-      is_remote: formData.get("is_remote") === "on", // Pobierz wartość checkboxa
+      city: formData.get("city"),
+      is_remote: formData.get("is_remote") === "on",
       ...(updatedWorkingExperience && { working_experience: updatedWorkingExperience }),
     };
 
@@ -207,20 +207,20 @@ function TutorProfile({ user }) {
                           <hr className="my-2"/>
 
                           <h5 className="text-indigo-600 font-bold text-lg">User Credentials</h5>
-                          <p>
+                          <p className="mt-1">
                             <strong>City:</strong> {userData.city}
                           </p>
-                          <p>
+                          <p className="mt-1">
                             <strong>Phone Number:</strong> {userData.phone_number || "N/A"}
                           </p>
-                          <label htmlFor="is_remote" className="ml-2 text-sm font-medium text-gray-700">
+                          <label htmlFor="is_remote" className="ml-2 mt-2 text-sm font-medium text-gray-700">
                             Willing to work remotely
                           </label>
                           <input
                               type="checkbox"
                               id="is_remote"
                               name="is_remote"
-                              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                              className="h-4 ml-2 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                               disabled
                               defaultChecked={userData?.tutor_profile?.is_remote || false}
                           />
@@ -387,7 +387,7 @@ function TutorProfile({ user }) {
             </div>
             <div className="mb-4">
               <label htmlFor="subjects" className="block text-sm font-medium text-gray-700 text-center">
-                Please select the subjects you are specialized in
+                Please select the subjects you are specialized in and amount of money you want to charge for each hour
               </label>
               <div className="mt-4 space-y-6 flex flex-col items-center">
                 {subjects.map((subject) => (
@@ -424,7 +424,7 @@ function TutorProfile({ user }) {
                                   min="0"
                                   required
                               />
-                              <span className="text-gray-500">PLN</span>
+                              <span className="text-gray-500">PLN/h</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <input
@@ -436,7 +436,7 @@ function TutorProfile({ user }) {
                                   min="0"
                                   required
                               />
-                              <span className="text-gray-500">PLN</span>
+                              <span className="text-gray-500">PLN/h</span>
                             </div>
                             <input
                                 type="hidden"
@@ -482,6 +482,7 @@ function TutorProfile({ user }) {
                     name="is_remote"
                     className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                     defaultChecked={userData?.tutor_profile?.is_remote || false}
+                    disabled={!userData}
                 />
                 <label htmlFor="is_remote" className="ml-2 block text-sm font-medium text-gray-700">
                   Willing to work remotely

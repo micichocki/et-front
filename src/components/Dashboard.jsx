@@ -14,7 +14,6 @@ const Dashboard = () => {
                 const response = await axios.get('/api/tutoring/user/me/');
                 const userData = response.data;
                 setData(userData);
-
                 let lessonsResponse;
                 if (userData.roles[0].id === 3) {
                     lessonsResponse = await axios.get('/api/tutoring/parent/lessons/');
@@ -31,16 +30,12 @@ const Dashboard = () => {
         fetchData();
     }, []);
 
-
-
-
     if (!data) {
         return <div>Loading...</div>;
     }
     return (
-
         <div>
-            {data.roles[0].id === 3 && <ParentDashboard user={data} lessons={lessons}/>}
+            {data.roles[0].id === 3 && <ParentDashboard user={data} lessons={lessons} />}
             {data.roles[0].id === 2 && <TutorDashboard user={data} lessons={lessons} />}
             {data.roles[0].id === 1 && <StudentDashboard user={data} lessons={lessons} />}
         </div>

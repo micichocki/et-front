@@ -130,8 +130,7 @@ const TutorSearch = ({ user, onSendMessage }) => {
                                 <select
                                     value={sortOrder}
                                     onChange={(e) => setSortOrder(e.target.value)}
-                                    className="border border-indigo-300 rounded px-6 py-1 focus:outline-none focus:ring focus:ring-indigo-300"
-                                >
+                                    className="border border-indigo-300 rounded  py-1 focus:outline-none focus:ring focus:ring-indigo-300 text-left"                                >
                                     <option value="asc">Ascending</option>
                                     <option value="desc">Descending</option>
                                 </select>

@@ -13,6 +13,7 @@ import ParentProfile from './components/ParentProfile';
 import TutorProfile from './components/TutorProfile';
 import StudentProfile from './components/StudentProfile';
 import TutorSearch from './components/TutorSearch';
+import PendingLessons from './components/PendingLessons';
 import Error404 from './components/Error404';
 
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/tutor-profile" element={<ProtectedRoute element={TutorProfile} />} />
           <Route path="/student-profile" element={<ProtectedRoute element={StudentProfile} />} />
           <Route path="/search" element={<ProtectedRoute element={TutorSearch} />} />
+          <Route path="/pending-lessons" element={<ProtectedRoute element={PendingLessons} />} />
           {/* <Route path="*" element={<Error404 />} /> */}
         </Routes>
       </Router>

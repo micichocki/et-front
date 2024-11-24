@@ -4,7 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useNavigate } from 'react-router-dom';
 
-const LessonSlider = ({ lessons }) => {
+const LessonSlider = ({ lessons, isStudent, isTutor }) => {
     const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
     const navigate = useNavigate();
     const now = new Date();
@@ -159,7 +159,8 @@ const LessonSlider = ({ lessons }) => {
                                     <span className="font-medium text-xl text-indigo-700">Duration:</span> <span className="text-gray-600">{lessonDuration}</span>
                                 </p>
                                 <p className="text-lg text-indigo-600 mb-4">
-                                    <span className="font-medium text-xl text-indigo-700">Student:</span> <span className="text-gray-600">{lesson.student.user_full_name}</span>
+                                    {isStudent && `Tutor: ${lesson.tutor.user_full_name}`}
+                                    {isTutor && `Student: ${lesson.student.user_full_name}`}
                                 </p>
                             </div>
 

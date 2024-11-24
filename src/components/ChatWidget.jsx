@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import axios from '../axiosConfig';
+import LessonBooking from "./LessonBooking";
 
 const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
     const [socket, setSocket] = useState(null);
@@ -9,6 +10,7 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
     const [recipient, setRecipient] = useState(initialRecipient || '');
     const [users, setUsers] = useState([]);
     const messagesEndRef = useRef(null);
+    const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
 
     useImperativeHandle(ref, () => ({
         startChatWith: (tutor) => {
@@ -18,7 +20,7 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
                 }
                 return prevUsers;
             });
-            handleRecipientChange(tutor.email).then(r =>(setIsOpen(true)));
+            handleRecipientChange(tutor).then(r =>(setIsOpen(true)));
         },
     }));
 
@@ -26,7 +28,6 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
         const fetchUsers = async () => {
             try {
                 const response = await axios.get('/api/tutoring/users-with-messages/');
-                console.log(response.data)
                 setUsers(response.data);
             } catch (err) {
                 console.error(err);
@@ -38,7 +39,7 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
     useEffect(() => {
         if (user && recipient) {
             if (socket) socket.close();
-            const wsUrl = `ws://localhost:8000/ws/chat/?sender=${user.email}&recipient=${recipient}`;
+            const wsUrl = `ws://localhost:8000/ws/chat/?sender=${user.email}&recipient=${recipient.email}`;
             const newSocket = new WebSocket(wsUrl);
 
             setSocket(newSocket);
@@ -70,10 +71,10 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
     };
 
     const handleSendMessage = () => {
-        if (newMessage.trim() && recipient.trim() && socket) {
+        if (newMessage.trim() && recipient.email.trim() && socket) {
             const message = {
                 message: newMessage,
-                recipient: recipient,
+                recipient: recipient.email,
                 sender: user,
             };
             socket.send(JSON.stringify(message));
@@ -81,10 +82,10 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
         }
     };
 
-    const handleRecipientChange = async (email) => {
-        setRecipient(email);
+    const handleRecipientChange = async (tutor) => {
+        setRecipient(tutor);
         try {
-            const response = await axios.get(`/api/tutoring/messages/?recipient=${encodeURIComponent(email)}`);
+            const response = await axios.get(`/api/tutoring/messages/?recipient=${encodeURIComponent(tutor.email)}`);
             const messagesWithSender = response.data.map((msg) => ({
                 ...msg,
                 senderIsCurrentUser: msg.sender.email === user.email,
@@ -93,6 +94,10 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const handleBookLesson = () => {
+        setIsBookingPopupOpen(true);
     };
 
     return (
@@ -110,12 +115,12 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
                         <label className="block text-gray-700 text-sm mb-2">Select a recipient:</label>
                         <select
                             className="w-full p-2 border rounded"
-                            value={recipient}
-                            onChange={(e) => handleRecipientChange(e.target.value)}
+                            value={recipient ? JSON.stringify(recipient) : ''}
+                            onChange={(e) => handleRecipientChange(JSON.parse(e.target.value))}
                         >
                             <option value="">-- Choose a recipient --</option>
                             {users.map((user) => (
-                                <option key={user.email} value={user.email}>
+                                <option key={user.email} value={JSON.stringify(user)}>
                                     {user.first_name} {user.last_name} ({user.email})
                                 </option>
                             ))}
@@ -126,7 +131,7 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
                         <div className="flex-1 flex flex-col min-h-0">
                             <div
                                 className="flex-1 p-4 bg-gray-50 overflow-y-auto max-h-[28rem]"
-                                style={{ overflowY: 'auto' }}
+                                style={{overflowY: 'auto'}}
                             >
                                 {messages.map((message, index) => {
                                     const isCurrentUser =
@@ -178,7 +183,21 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
                                 >
                                     Send
                                 </button>
+                                <button
+                                    className="bg-green-500 text-white px-4 py-2 rounded-lg ml-2"
+                                    onClick={handleBookLesson}
+                                >
+                                   <strong>+</strong>
+                                </button>
                             </div>
+                            {isBookingPopupOpen && (
+                                <LessonBooking
+                                    user={user}
+                                    recipient={recipient}
+                                    isBookingPopupOpen={isBookingPopupOpen}
+                                    setIsBookingPopupOpen={setIsBookingPopupOpen}
+                                />
+                            )}
                         </div>
                     ) : (
                         <div className="flex-1 flex items-center justify-center text-gray-500">
