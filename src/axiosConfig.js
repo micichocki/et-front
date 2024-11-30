@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import config from './config';
 
@@ -12,9 +11,12 @@ instance.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        config.headers['Content-Type'] = 'application/json';
+        if (!config.headers['Content-Type']) {
+            config.headers['Content-Type'] = 'application/json';
+        }
         config.headers['Accept'] = 'application/json';
-        return config;},
+        return config;
+    },
     (error) => {
         return Promise.reject(error);
     }

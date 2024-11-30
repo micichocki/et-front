@@ -14,6 +14,7 @@ function TutorProfile({ user }) {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectPrices, setSubjectPrices] = useState({});
+  const [avatar, setAvatar] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -67,6 +68,10 @@ function TutorProfile({ user }) {
     }));
   };
 
+  const handleAvatarChange = (event) => {
+    setAvatar(event.target.files[0]);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (invalidTimes) {
@@ -110,7 +115,17 @@ function TutorProfile({ user }) {
       is_remote: formData.get("is_remote") === "on",
       ...(updatedWorkingExperience && { working_experience: updatedWorkingExperience }),
     };
+    if (avatar) {
+      const avatarFormData = new FormData();
+      avatarFormData.append("avatar", avatar);
 
+      await axios.post('/api/tutoring/upload-avatar/', avatarFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setSuccess("Profile and avatar updated successfully!");
+    }
     try {
       if (userData && userData.tutor_profile) {
         await axios.put(`/api/tutoring/tutors/${userData.tutor_profile.id}/`, data);
@@ -488,6 +503,18 @@ function TutorProfile({ user }) {
                   Willing to work remotely
                 </label>
               </div>
+            </div>
+            <div className="mb-4">
+              <label htmlFor="avatar" className="block text-sm font-medium text-gray-700">
+                Upload Avatar
+              </label>
+              <input
+                  type="file"
+                  id="avatar"
+                  name="avatar"
+                  className="mt-1 block w-full max-w-md px-3 py-0.5 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm mx-auto"
+                  onChange={handleAvatarChange}
+              />
             </div>
             {error && (
                 <div className="mb-4 text-red-500 text-sm">

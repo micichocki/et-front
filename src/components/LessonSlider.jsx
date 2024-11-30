@@ -105,7 +105,7 @@ const LessonSlider = ({ lessons, isStudent, isTutor }) => {
     };
 
     const navigateToDetails = (lessonId) => {
-        navigate(`/api/tutoring/lessons/${lessonId}`);
+        navigate(`/lessons/${lessonId}`);
     };
 
     const openMeeting = (url) => {
@@ -165,12 +165,14 @@ const LessonSlider = ({ lessons, isStudent, isTutor }) => {
                             </div>
 
                             <div className="flex justify-between mt-6">
-                                <button
-                                    onClick={() => openMeeting(lesson.google_meet_url)}
-                                    className={`text-white px-4 py-2 rounded-md shadow transition-colors ${getButtonClass()}`}
-                                >
-                                    Join Google Meet
-                                </button>
+                                {lesson.google_meet_url && (
+                                    <button
+                                        onClick={() => openMeeting(lesson.google_meet_url)}
+                                        className={`text-white px-4 py-2 rounded-md shadow transition-colors ${getButtonClass()}`}
+                                    >
+                                        Join Google Meet
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => navigateToDetails(lesson.id)}
                                     className={`text-white px-4 py-2 rounded-md shadow transition-colors ${getButtonClass()}`}

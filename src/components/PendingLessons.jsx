@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../axiosConfig';
 import LessonTile from './LessonTile';
+import {useLocation} from "react-router-dom";
 
 const PendingLessons = () => {
     const [lessons, setLessons] = useState([]);
     const [currentTab, setCurrentTab] = useState('pending');
     const [user, setUser] = useState(null);
     const [userRole, setUserRole] = useState('');
-
+    const location = useLocation();
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -19,15 +20,24 @@ const PendingLessons = () => {
             }
         };
 
+
+        const params = new URLSearchParams(location.search);
+        const state = params.get('state');
+        const code = params.get('code');
+        if (state && code) {
+            handleGoogleCalendarCallback();
+        }
+
+
         if (!user) {
             fetchUserData();
         } else {
             let endpoint = '';
-            if (user.roles[0].id === 1) {
+            if (user.roles && user.roles[0].id === 1) {
                 endpoint = '/api/tutoring/student/lessons/';
-            } else if (user.roles[0].id === 2) {
+            } else if (user.roles && user.roles[0].id === 2) {
                 endpoint = '/api/tutoring/tutor/lessons/';
-            } else if (user.roles[0].id === 3) {
+            } else if (user.roles && user.roles[0].id === 3) {
                 endpoint = '/api/tutoring/parent/lessons/';
             }
 
@@ -53,14 +63,33 @@ const PendingLessons = () => {
             });
     };
 
-    const handleSendProposition = (lessonId) => {
-        axios.post(`/api/tutoring/lessons/${lessonId}/proposition`)
-            .then(() => {
-                alert("Proposition sent to the tutor!");
-            })
-            .catch(error => {
-                console.error('There was an error sending the proposition!', error);
-            });
+    const handleAuthorizeGoogleCalendar = async () => {
+        try {
+            const response = await axios.post(`/api/tutoring/lessons/authorize-google-calendar/`);
+            const authUrl = `${response.data.auth_url}&redirect_uri=http://localhost:3000/pending-lessons/`;
+            window.location.href = authUrl;
+        } catch (error) {
+            console.error('There was an error authorizing the Google Calendar API!', error);
+        }
+    };
+
+    const handleGoogleCalendarCallback = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get('state');
+        const code = params.get('code');
+        const redirectUri = 'http://localhost:3000/pending-lessons/';
+
+        if (state && code) {
+            try {
+                const response = await axios.get('/api/tutoring/lessons/create_google_credential/', {
+                    params: { state, code, redirectUri }
+                });
+                console.log('Google Calendar authorization successful:', response.data);
+                setUser({ ...user, google_credentials: true });
+            } catch (error) {
+                console.error('There was an error handling the Google Calendar callback!', error);
+            }
+        }
     };
 
     const currentDate = new Date();
@@ -79,6 +108,14 @@ const PendingLessons = () => {
 
     return (
         <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+            {(!user?.google_credentials || user.google_credentials.length === 0) && (
+                <button
+                    onClick={handleAuthorizeGoogleCalendar}
+                    className="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                    Authorize Google Calendar
+                </button>
+            )}
             <div className="flex justify-center gap-4 mb-6">
                 <button
                     className={`px-4 py-2 rounded-lg ${
@@ -109,11 +146,29 @@ const PendingLessons = () => {
                 {sortedLessons.length > 0 ? (
                     sortedLessons.map(lesson => (
                         <LessonTile
+                            user={user}
                             key={lesson.id}
                             lesson={lesson}
                             currentUserRole={userRole}
                             onAccept={handleAccept}
-                            onSendProposition={handleSendProposition}
+                            onReload={() => {
+                                let endpoint = '';
+                                if (user.roles && user.roles[0].id === 1) {
+                                    endpoint = '/api/tutoring/student/lessons/';
+                                } else if (user.roles && user.roles[0].id === 2) {
+                                    endpoint = '/api/tutoring/tutor/lessons/';
+                                } else if (user.roles && user.roles[0].id === 3) {
+                                    endpoint = '/api/tutoring/parent/lessons/';
+                                }
+
+                                axios.get(endpoint)
+                                    .then(response => {
+                                        setLessons(response.data);
+                                    })
+                                    .catch(error => {
+                                        console.error('There was an error fetching the lessons!', error);
+                                    });
+                            }}
                         />
                     ))
                 ) : (

@@ -7,6 +7,7 @@ const TutorDashboard = ({ user, lessons = [] }) => {
     const [redirect, setRedirect] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showPopup, setShowPopup] = useState(false);
+    const [popupLessons, setPopupLessons] = useState([]);
     const [tutorLessons, setTutorLessons] = useState(lessons);
 
     const navigate = useNavigate();
@@ -38,7 +39,7 @@ const TutorDashboard = ({ user, lessons = [] }) => {
     }
 
     const navigateToLessonDetails = (lessonId) => {
-        navigate(`/api/tutoring/lessons/${lessonId}`);
+        navigate(`/lessons/${lessonId}`);
     };
 
     const getDaysInMonth = (date) => {
@@ -181,44 +182,46 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                                         {lessonsForDay.length > 2 && (
                                             <li
                                                 className="cursor-pointer text-white-600hover:text-white-600 transition-colors p-1 rounded"
-                                                onClick={() => setShowPopup(true)}
+                                                onClick={() => {
+                                                    setPopupLessons(lessonsForDay);
+                                                    setShowPopup(true);
+                                                }}
                                             >
                                                 ... more
                                             </li>
                                         )}
                                         {showPopup && (
-                                            <div
-                                                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
                                                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
                                                     <h2 className="text-xl font-bold mb-4 text-indigo-600">
                                                         Lessons for {currentDate.toLocaleDateString()}
                                                     </h2>
                                                     <ul className="space-y-2">
-                                                        {lessonsForDay.map((lesson, index) => (
+                                                        {popupLessons.map((lesson, index) => (
                                                             <li
                                                                 key={index}
-                                                                className="cursor-pointer hover:border-indigo-200 hover:text-indigo-800 transition-colors p-2 rounded  border border-gray-200"
+                                                                className="cursor-pointer hover:border-indigo-200 hover:text-indigo-800 transition-colors p-2 rounded border border-gray-200"
                                                                 onClick={() => {
                                                                     setShowPopup(false);
                                                                     navigateToLessonDetails(lesson.id);
                                                                 }}
                                                             >
-                                                                <span className="font-medium  text-gray-600">
-                                                                    {lesson.subject.name}
-                                                                </span>
+                        <span className="font-medium text-gray-600">
+                            {lesson.subject.name}
+                        </span>
                                                                 <span className="block text-xs text-gray-600">
-                                                                    {new Date(lesson.start_time).toLocaleTimeString([], {
-                                                                        hour: '2-digit',
-                                                                        minute: '2-digit',
-                                                                    })} -
+                            {new Date(lesson.start_time).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })} -
                                                                     {new Date(lesson.end_time).toLocaleTimeString([], {
                                                                         hour: '2-digit',
                                                                         minute: '2-digit',
                                                                     })}
-                                                                </span>
+                        </span>
                                                                 <span className="block text-xs text-gray-600">
-                                                                    {lesson.student.user_full_name}
-                                                                </span>
+                            {lesson.student.user_full_name}
+                        </span>
                                                             </li>
                                                         ))}
                                                     </ul>

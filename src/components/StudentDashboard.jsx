@@ -7,6 +7,8 @@ const StudentDashboard = ({ user, lessons = [] }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showPopup, setShowPopup] = useState(false);
     const [studentLessons, setStudentLessons] = useState(lessons);
+    const [selectedDayLessons, setSelectedDayLessons] = useState([]);
+    const [selectedDay, setSelectedDay] = useState(null);
 
     const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ const StudentDashboard = ({ user, lessons = [] }) => {
     }, [studentLessons]);
 
     const navigateToLessonDetails = (lessonId) => {
-        navigate(`/api/tutoring/lessons/${lessonId}`);
+        navigate(`/lessons/${lessonId}`);
     };
 
     const getDaysInMonth = (date) => {
@@ -124,7 +126,7 @@ const StudentDashboard = ({ user, lessons = [] }) => {
                                 </span>
                                 {lessonsForDay.length > 0 ? (
                                     <ul className="text-sm mt-6 space-y-1 w-full">
-                                        {lessonsForDay.map((lesson, index) => (
+                                        {lessonsForDay.slice(0, 2).map((lesson, index) => (
                                             <li
                                                 key={index}
                                                 className="cursor-pointer hover:bg-indigo-200 hover:text-indigo-800 transition-colors p-1 rounded"
@@ -147,6 +149,19 @@ const StudentDashboard = ({ user, lessons = [] }) => {
                                                 </span>
                                             </li>
                                         ))}
+                                        {lessonsForDay.length > 2 && (
+                                            <li
+                                                className="cursor-pointer text-white-600 hover:text-white-600 transition-colors p-1 rounded"
+                                                onClick={() => {
+                                                    setSelectedDay(day);
+                                                    console.log(lessonsForDay);
+                                                    setSelectedDayLessons(lessonsForDay);
+                                                    setShowPopup(true);
+                                                }}
+                                            >
+                                                ... more
+                                            </li>
+                                        )}
                                     </ul>
                                 ) : (
                                     <span className="mt-6 text-sm">No lessons</span>
@@ -156,6 +171,49 @@ const StudentDashboard = ({ user, lessons = [] }) => {
                     })}
                 </div>
             </div>
+            {showPopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                        <h2 className="text-xl font-bold mb-4 text-indigo-600">
+                            Lessons for {selectedDay} {currentDate.toLocaleString("en-US", { month: "long", year: "numeric" })}
+                        </h2>
+                        <ul className="space-y-2">
+                            {selectedDayLessons.map((lesson, index) => (
+                                <li
+                                    key={index}
+                                    className="cursor-pointer hover:border-indigo-200 hover:text-indigo-800 transition-colors p-2 rounded border border-gray-200"
+                                    onClick={() => {
+                                        setShowPopup(false);
+                                        navigateToLessonDetails(lesson.id);
+                                    }}
+                                >
+                                    <span className="font-medium text-gray-600">{lesson.subject.name}</span>
+                                    <span className="block text-xs text-gray-600">
+                                        {new Date(lesson.start_time).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}{" "}
+                                        -{" "}
+                                        {new Date(lesson.end_time).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </span>
+                                    <span className="block text-xs text-gray-600">
+                                        Tutor: {lesson.tutor.user_full_name}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                        <button
+                            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700"
+                            onClick={() => setShowPopup(false)}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

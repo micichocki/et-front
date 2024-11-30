@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import axios from '../axiosConfig';
+import {useLocation, useNavigate} from 'react-router-dom';
+import LessonUpdateModal from './LessonUpdateModal';
 
 const timeAgo = (date) => {
     const now = new Date();
@@ -42,7 +45,11 @@ const timeLeft = (date) => {
     }
 };
 
-const LessonTile = ({ lesson, currentUserRole, onAccept, onSendProposition }) => {
+const LessonTile = ({ user, lesson, currentUserRole, onAccept, onReload }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedLesson, setSelectedLesson] = useState(null);
+    const navigate = useNavigate();
+
     const {
         id,
         tutor,
@@ -55,16 +62,35 @@ const LessonTile = ({ lesson, currentUserRole, onAccept, onSendProposition }) =>
         is_remote,
         is_accepted,
         description,
+        accepted_by,
     } = lesson;
-
-    const isStudent = currentUserRole === 'Student';
-    const isTutor = currentUserRole === 'Tutor';
-
-    const userName = isStudent ? tutor.user_full_name : isTutor ? student.user_full_name : '';
 
     const isFutureLesson = new Date(start_time) > new Date();
     const isArchivedLesson = new Date(end_time) < new Date();
-    const isUpcomingLesson = !isArchivedLesson && new Date(start_time) > new Date() && is_accepted;
+
+    const handleSendProposition = () => {
+        setSelectedLesson(lesson);
+        setIsModalOpen(true);
+    };
+
+    const handleUpdateLesson = (updatedLesson) => {
+        setSelectedLesson(updatedLesson);
+        setIsModalOpen(false);
+        onReload();
+    };
+
+    const handleCreateMeeting = async () => {
+        try {
+            await axios.post(`/api/tutoring/lessons/${id}/create-google-meet/`);
+            onReload();
+        } catch (error) {
+            console.error('There was an error authorizing the Google Calendar API!', error);
+        }
+    };
+
+    const goToDetails = () => {
+        navigate(`/lessons/${id}`);
+    };
 
     return (
         <div className="p-6 border border-gray-300 rounded-lg shadow-sm bg-white">
@@ -97,18 +123,18 @@ const LessonTile = ({ lesson, currentUserRole, onAccept, onSendProposition }) =>
                 {isArchivedLesson ? timeAgo(start_time) : timeLeft(start_time)}
             </p>
 
-            {google_meet_url && (
+            {google_meet_url &&  user.google_credentials.length !==0 && (
                 <a
                     href={google_meet_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block mt-3 bg-blue-500 text-white text-center py-2 px-4 rounded hover:bg-blue-600"
+                    className=" mt-3 bg-blue-500 text-white text-center py-2 px-4 rounded hover:bg-blue-600"
                 >
                     Join Google Meet
                 </a>
             )}
 
-            {!is_accepted && !isArchivedLesson && userName && (
+            {isFutureLesson && !is_accepted && accepted_by === currentUserRole && (
                 <button
                     onClick={() => onAccept(id)}
                     className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -117,13 +143,48 @@ const LessonTile = ({ lesson, currentUserRole, onAccept, onSendProposition }) =>
                 </button>
             )}
 
-            {isFutureLesson && !is_accepted && currentUserRole === 'Student' && (
+            {isFutureLesson && !is_accepted && accepted_by === currentUserRole && (
                 <button
-                    onClick={() => onSendProposition(id)}
+                    onClick={handleSendProposition}
                     className="mt-3 ml-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-yellow-600"
                 >
                     Send Proposition to Tutor
                 </button>
+            )}
+
+            {isFutureLesson && !is_accepted && accepted_by !== currentUserRole && (
+                <p className="mt-3 text-yellow-600">
+                    Lesson is pending to be accepted by {accepted_by === 'Tutor' ? 'tutor' : 'student'}.
+                </p>
+            )}
+
+            {is_accepted && !google_meet_url && user.google_credentials.length !==0 && (
+                <button
+                    onClick={handleCreateMeeting}
+                    rel="noopener noreferrer"
+                    className="mt-3 bg-blue-500 text-white text-center py-2 px-4 rounded hover:bg-blue-600"
+                >
+                    Create Meeting
+                </button>
+            )}
+
+            <button
+                onClick={goToDetails}
+                className="mt-3 ml-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+                Go to Details
+            </button>
+
+            {selectedLesson && (
+                <LessonUpdateModal
+                    user={user}
+                    tutor={tutor}
+                    lesson={selectedLesson}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onUpdate={handleUpdateLesson}
+                    subjects={tutor.subjects}
+                />
             )}
         </div>
     );
