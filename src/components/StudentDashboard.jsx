@@ -102,9 +102,18 @@ const StudentDashboard = ({ user, lessons = [] }) => {
                         <div key={`empty-${i}`} className="h-32"></div>
                     ))}
                     {days.map((day) => {
-                        const lessonsForDay = studentLessons.filter(
-                            (lesson) => new Date(lesson.start_time).getDate() === day
-                        );
+                        const lessonsForDay = studentLessons.filter((lesson) => {
+                            const lessonStart = new Date(lesson.start_time);
+                            const lessonEnd = new Date(lesson.end_time);
+                            return (
+                                lessonStart.getDate() === day &&
+                                lessonStart.getMonth() === currentDate.getMonth() &&
+                                lessonStart.getFullYear() === currentDate.getFullYear() &&
+                                lessonEnd.getDate() === day &&
+                                lessonEnd.getMonth() === currentDate.getMonth() &&
+                                lessonEnd.getFullYear() === currentDate.getFullYear()
+                            );
+                        });
 
                         const isToday =
                             day === currentDay &&
@@ -172,7 +181,7 @@ const StudentDashboard = ({ user, lessons = [] }) => {
             </div>
             {showPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
                         <h2 className="text-xl font-bold mb-4 text-indigo-600">
                             Lessons for {selectedDay} {currentDate.toLocaleString("en-US", { month: "long", year: "numeric" })}
                         </h2>

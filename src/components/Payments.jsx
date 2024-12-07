@@ -123,6 +123,10 @@ const Payments = () => {
                         <h2 className="text-lg font-semibold text-indigo-600">
                             Unpaid Balance: <span className="text-indigo-800">{notPaidSaldo > 0 ? notPaidSaldo : 0} PLN</span>
                         </h2>
+
+                        <h3 className="mt-4 text-lg font-semibold text-indigo-600">
+                            Paid Balance: <span className="text-indigo-800">{paidSaldo > 0 ? paidSaldo : 0} PLN</span>
+                        </h3>
                         {notPaidSaldo > 0 && (
                             <button
                                 onClick={handleWithdraw}
@@ -131,9 +135,6 @@ const Payments = () => {
                                 Withdraw
                             </button>
                         )}
-                        <h3 className="mt-4 text-lg font-semibold text-indigo-600">
-                            Paid Balance: <span className="text-indigo-800">{paidSaldo > 0 ? paidSaldo : 0} PLN</span>
-                        </h3>
                     </div>
                 )}
 

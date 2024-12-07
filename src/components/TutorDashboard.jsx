@@ -78,7 +78,6 @@ const TutorDashboard = ({ user, lessons = [] }) => {
         <div>
             <LessonSlider lessons={tutorLessons} isTutor={true}></LessonSlider>
             <div className="container mx-auto px-4 py-8">
-
                 <div className="text-center mb-4">
                     <button
                         onClick={goToCurrentMonth}
@@ -95,7 +94,7 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                         &lt;
                     </button>
                     <div className="text-xl font-semibold text-indigo-600 mx-4">
-                        {currentDate.toLocaleString("en-US", {month: "long", year: "numeric"})}
+                        {currentDate.toLocaleString("en-US", { month: "long", year: "numeric" })}
                     </div>
                     <button
                         onClick={nextMonth}
@@ -105,7 +104,6 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                     </button>
                 </div>
                 <div className="grid grid-cols-7 gap-4 border border-gray-300 rounded-xl shadow-lg p-6 bg-white">
-
                     <div className="text-center font-semibold text-gray-600">Sun</div>
                     <div className="text-center font-semibold text-gray-600">Mon</div>
                     <div className="text-center font-semibold text-gray-600">Tue</div>
@@ -114,30 +112,22 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                     <div className="text-center font-semibold text-gray-600">Fri</div>
                     <div className="text-center font-semibold text-gray-600">Sat</div>
 
-                    {Array.from({length: firstDayOfMonth}, (_, i) => (
+                    {Array.from({ length: firstDayOfMonth }, (_, i) => (
                         <div key={`empty-${i}`} className="h-32"></div>
                     ))}
                     {days.map((day) => {
-                        const lessonsForDay = tutorLessons
-                            .filter((lesson) => new Date(lesson.start_time).getDate() === day)
-                            .sort((a, b) => {
-                                const now = new Date();
-                                const aStartTime = new Date(a.start_time);
-                                const aEndTime = new Date(a.end_time);
-                                const bStartTime = new Date(b.start_time);
-                                const bEndTime = new Date(b.end_time);
-
-                                const aStatus = now < aStartTime ? 'upcoming' : now > aEndTime ? 'passed' : 'ongoing';
-                                const bStatus = now < bStartTime ? 'upcoming' : now > bEndTime ? 'passed' : 'ongoing';
-
-                                const statusOrder = {ongoing: 0, upcoming: 1, passed: 2};
-
-                                if (statusOrder[aStatus] !== statusOrder[bStatus]) {
-                                    return statusOrder[aStatus] - statusOrder[bStatus];
-                                }
-
-                                return aStartTime - bStartTime;
-                            });
+                        const lessonsForDay = tutorLessons.filter((lesson) => {
+                            const lessonStart = new Date(lesson.start_time);
+                            const lessonEnd = new Date(lesson.end_time);
+                            return (
+                                lessonStart.getDate() === day &&
+                                lessonStart.getMonth() === currentDate.getMonth() &&
+                                lessonStart.getFullYear() === currentDate.getFullYear() &&
+                                lessonEnd.getDate() === day &&
+                                lessonEnd.getMonth() === currentDate.getMonth() &&
+                                lessonEnd.getFullYear() === currentDate.getFullYear()
+                            );
+                        });
 
                         const isToday =
                             day === currentDay &&
@@ -152,11 +142,11 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                                         : "bg-gray-100 text-gray-500 border-gray-200"
                                 } ${isToday ? "bg-indigo-500 text-white" : ""} relative`}
                             >
-                                <span
-                                    className={`absolute top-2 left-2 text-lg font-semibold ${isToday ? "text-white" : ""}`}
-                                >
-                                    {day}
-                                </span>
+                            <span
+                                className={`absolute top-2 left-2 text-lg font-semibold ${isToday ? "text-white" : ""}`}
+                            >
+                                {day}
+                            </span>
                                 {lessonsForDay.length > 0 ? (
                                     <ul className="text-sm mt-6 space-y-1 w-full">
                                         {lessonsForDay.slice(0, 2).map((lesson, index) => (
@@ -167,15 +157,15 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                                             >
                                                 <span className="font-medium">{lesson.subject.name}</span>
                                                 <span className="block text-xs text-white-600">
-                                                    {new Date(lesson.start_time).toLocaleTimeString([], {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })} -
+                                                {new Date(lesson.start_time).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })} -
                                                     {new Date(lesson.end_time).toLocaleTimeString([], {
                                                         hour: '2-digit',
                                                         minute: '2-digit',
                                                     })}
-                                                </span>
+                                            </span>
                                             </li>
                                         ))}
 
@@ -192,38 +182,40 @@ const TutorDashboard = ({ user, lessons = [] }) => {
                                         )}
                                         {showPopup && (
                                             <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
-                                                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                                                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
                                                     <h2 className="text-xl font-bold mb-4 text-indigo-600">
                                                         Lessons for {currentDate.toLocaleDateString()}
                                                     </h2>
                                                     <ul className="space-y-2">
-                                                        {popupLessons.map((lesson, index) => (
-                                                            <li
-                                                                key={index}
-                                                                className="cursor-pointer hover:border-indigo-200 hover:text-indigo-800 transition-colors p-2 rounded border border-gray-200"
-                                                                onClick={() => {
-                                                                    setShowPopup(false);
-                                                                    navigateToLessonDetails(lesson.id);
-                                                                }}
-                                                            >
-                        <span className="font-medium text-gray-600">
-                            {lesson.subject.name}
-                        </span>
-                                                                <span className="block text-xs text-gray-600">
-                            {new Date(lesson.start_time).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })} -
-                                                                    {new Date(lesson.end_time).toLocaleTimeString([], {
+                                                        {popupLessons
+                                                            .filter((lesson) => new Date(lesson.start_time).getDate() === currentDate.getDate())
+                                                            .map((lesson, index) => (
+                                                                <li
+                                                                    key={index}
+                                                                    className="cursor-pointer hover:border-indigo-200 hover:text-indigo-800 transition-colors p-2 rounded border border-gray-200"
+                                                                    onClick={() => {
+                                                                        setShowPopup(false);
+                                                                        navigateToLessonDetails(lesson.id);
+                                                                    }}
+                                                                >
+                                                                <span className="font-medium text-gray-600">
+                                                                    {lesson.subject.name}
+                                                                </span>
+                                                                    <span className="block text-xs text-gray-600">
+                                                                    {new Date(lesson.start_time).toLocaleTimeString([], {
                                                                         hour: '2-digit',
                                                                         minute: '2-digit',
-                                                                    })}
-                        </span>
-                                                                <span className="block text-xs text-gray-600">
-                            {lesson.student.user_full_name}
-                        </span>
-                                                            </li>
-                                                        ))}
+                                                                    })} -
+                                                                        {new Date(lesson.end_time).toLocaleTimeString([], {
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit',
+                                                                        })}
+                                                                </span>
+                                                                    <span className="block text-xs text-gray-600">
+                                                                    {lesson.student.user_full_name}
+                                                                </span>
+                                                                </li>
+                                                            ))}
                                                     </ul>
                                                     <button
                                                         className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700"
