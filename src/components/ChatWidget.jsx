@@ -183,12 +183,14 @@ const ChatWidget = forwardRef(({ user, recipient: initialRecipient }, ref) => {
                                 >
                                     Send
                                 </button>
-                                <button
-                                    className="bg-green-500 text-white px-4 py-2 rounded-lg ml-2"
-                                    onClick={handleBookLesson}
-                                >
-                                   <strong>+</strong>
-                                </button>
+                                {!user.tutor_profile?.id && (
+                                    <button
+                                        className="bg-green-500 text-white px-4 py-2 rounded-lg ml-2"
+                                        onClick={handleBookLesson}
+                                    >
+                                        <strong>+</strong>
+                                    </button>
+                                )}
                             </div>
                             {isBookingPopupOpen && (
                                 <LessonBooking

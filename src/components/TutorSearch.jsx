@@ -53,9 +53,10 @@ const TutorSearch = ({ user, onSendMessage }) => {
 
     const handleSendMessage = (tutor) => {
         if (onSendMessage) {
-            onSendMessage(tutor); // Call the parent-provided method
+            onSendMessage(tutor);
         }
     };
+
     const handleShowTel = (tutorId) => {
         setShowTel((prev) => ({ ...prev, [tutorId]: true }));
     };
@@ -71,6 +72,50 @@ const TutorSearch = ({ user, onSendMessage }) => {
         }
         return stars;
     };
+
+    const renderWorkingExperience = (experience) => (
+        <table className="min-w-full bg-white">
+            <thead>
+                <tr>
+                    <th className="py-2">Position</th>
+                    <th className="py-2">Start Date</th>
+                    <th className="py-2">End Date</th>
+                    <th className="py-2">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {experience.map((exp) => (
+                    <tr key={exp.id}>
+                        <td className="border px-4 py-2">{exp.position}</td>
+                        <td className="border px-4 py-2">{exp.start_date}</td>
+                        <td className="border px-4 py-2">{exp.end_date}</td>
+                        <td className="border px-4 py-2">{exp.description}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+
+    const renderAvailableHours = (hours) => (
+        <table className="min-w-full bg-white">
+            <thead>
+                <tr>
+                    <th className="py-2">Day of Week</th>
+                    <th className="py-2">Start Time</th>
+                    <th className="py-2">End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {hours.map((hour) => (
+                    <tr key={hour.id}>
+                        <td className="border px-4 py-2">{hour.day_of_week}</td>
+                        <td className="border px-4 py-2">{hour.start_time}</td>
+                        <td className="border px-4 py-2">{hour.end_time}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -145,52 +190,91 @@ const TutorSearch = ({ user, onSendMessage }) => {
                             {tutors.map((tutor) => (
                                 <div
                                     key={tutor.id}
-                                    className="bg-white p-6 rounded-lg shadow-md border border-indigo-300 flex items-start space-x-4 relative"
+                                    className="bg-white p-6 rounded-lg shadow-md border border-indigo-300 flex flex-col md:flex-row items-start md:space-x-4 relative"
                                 >
+                                    {/* Avatar */}
                                     <img
                                         src={tutor.avatar || avatarImage}
                                         alt={`${tutor.first_name} ${tutor.last_name}`}
-                                        className="h-20 w-20 rounded-full border border-indigo-300"
+                                        className="h-20 w-20 rounded-full border border-indigo-300 mb-4 md:mb-0"
                                     />
+
+                                    {/* Tutor Details */}
                                     <div className="flex-1">
                                         <h3 className="text-lg font-semibold text-indigo-600">
                                             {tutor.first_name} {tutor.last_name}
                                         </h3>
-                                        <p className="text-gray-600">{tutor.city}</p>
+                                        <p className="text-gray-600">{tutor.city || 'City not specified'}</p>
                                         <p className="text-indigo-600">
                                             {tutor.tutor_profile.is_remote ? 'Remote lessons available' : 'In-person lessons only'}
                                         </p>
-                                        <div>{renderStars(tutor.tutor_profile.average_rating)}</div>
+                                        <div className="flex items-center mt-2">
+                                            {renderStars(tutor.tutor_profile.average_rating)}
+                                            <span className="ml-2 text-gray-500">({tutor.tutor_profile.average_rating.toFixed(1)})</span>
+                                        </div>
                                         <p className="mt-2 text-gray-800 font-semibold">
                                             Subjects:
-                                            {tutor.tutor_profile.subject_prices.map((price) => (
-                                                <span
-                                                    key={price.subject.id}
-                                                    className="block text-sm text-gray-600"
-                                                >
-                                                    {price.subject.name}: {price.price_min} - {price.price_max} PLN/h
-                                                </span>
-                                            ))}
+                                            {tutor.tutor_profile.subject_prices.length > 0 ? (
+                                                tutor.tutor_profile.subject_prices.map((price) => (
+                                                    <span
+                                                        key={price.subject.id}
+                                                        className="block text-sm text-gray-600"
+                                                    >
+                            {price.subject.name}: {price.price_min} - {price.price_max} PLN/h
+                        </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-500">No subjects listed</span>
+                                            )}
                                         </p>
+
+                                        {/* Collapsible Sections */}
+                                        <details className="mt-4">
+                                            <summary className="text-md font-semibold text-indigo-600 cursor-pointer">
+                                                Working Experience
+                                            </summary>
+                                            <div className="mt-2">
+                                                {tutor.tutor_profile.working_experience.length > 0 ? (
+                                                    renderWorkingExperience(tutor.tutor_profile.working_experience)
+                                                ) : (
+                                                    <p className="text-gray-500">No experience listed</p>
+                                                )}
+                                            </div>
+                                        </details>
+
+                                        <details className="mt-4">
+                                            <summary className="text-md font-semibold text-indigo-600 cursor-pointer">
+                                                Available Hours
+                                            </summary>
+                                            <div className="mt-2">
+                                                {tutor.tutor_profile.available_hours.length > 0 ? (
+                                                    renderAvailableHours(tutor.tutor_profile.available_hours)
+                                                ) : (
+                                                    <p className="text-gray-500">No available hours listed</p>
+                                                )}
+                                            </div>
+                                        </details>
                                     </div>
-                                    <div className="flex flex-col items-center space-y-2">
+
+                                    {/* Actions */}
+                                    <div className="flex flex-col items-center space-y-2 mt-4 md:mt-0">
                                         <button
                                             onClick={() => handleSendMessage(tutor)}
-                                            className="bg-indigo-500 text-white px-4 py-2 rounded"
+                                            className="bg-indigo-500 text-white px-4 py-2 rounded shadow hover:bg-indigo-600 transition"
                                         >
                                             Send Message
                                         </button>
-                                            {tutor.phone_number && !showTel[tutor.id] && (
-                                                <button
-                                                    onClick={() => handleShowTel(tutor.id)}
-                                                    className="bg-indigo-500 text-white px-4 py-2 rounded shadow hover:bg-indigo-600 transition"
-                                                >
-                                                    Show Phone
-                                                </button>
-                                            )}
-                                            {showTel[tutor.id] && (
-                                                <p className="text-gray-800">Tel: {tutor.phone_number}</p>
-                                            )}
+                                        {tutor.phone_number && !showTel[tutor.id] && (
+                                            <button
+                                                onClick={() => handleShowTel(tutor.id)}
+                                                className="bg-gray-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 transition"
+                                            >
+                                                Show Phone
+                                            </button>
+                                        )}
+                                        {showTel[tutor.id] && (
+                                            <p className="text-gray-800">Tel: {tutor.phone_number}</p>
+                                        )}
                                     </div>
                                 </div>
                             ))}

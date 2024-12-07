@@ -148,7 +148,7 @@ const LessonTile = ({ user, lesson, currentUserRole, onAccept, onReload }) => {
                     onClick={handleSendProposition}
                     className="mt-3 ml-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-yellow-600"
                 >
-                    Send Proposition to Tutor
+                    Send Other Proposition
                 </button>
             )}
 

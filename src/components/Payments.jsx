@@ -156,7 +156,7 @@ const Payments = () => {
                                                 Amount: <span className="font-semibold">{lessonAmount > 0 ? lessonAmount : 0} PLN</span>
                                             </p>
                                         </div>
-                                        {!lesson.paid && data.roles[0].id === 1 && (
+                                        {!lesson.paid && (data.roles[0].id === 1 || data.roles[0].id === 3) && (
                                             <button
                                                 onClick={() => handlePay(lesson)}
                                                 className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow hover:bg-indigo-600"
