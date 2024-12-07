@@ -64,9 +64,9 @@ const LessonTile = ({ user, lesson, currentUserRole, onAccept, onReload }) => {
         description,
         accepted_by,
     } = lesson;
-
-    const isFutureLesson = new Date(start_time) > new Date();
-    const isArchivedLesson = new Date(end_time) < new Date();
+    const currentDate = new Date();
+    const isFutureLesson = new Date(start_time) > currentDate || (currentDate > new Date(start_time) && currentDate < new Date(end_time));
+    const isArchivedLesson = new Date(end_time) < currentDate;
 
     const handleSendProposition = () => {
         setSelectedLesson(lesson);

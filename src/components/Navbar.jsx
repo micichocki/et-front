@@ -92,7 +92,16 @@ const Navbar = ({ user, notificationCount }) => {
                                 )}
                                 {((user && user.student_profile && user.student_profile.id) || (user && user.tutor_profile && user.tutor_profile.id)) && (
                                     <a href="/pending-lessons"
-                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Pending Lessons</a>
+                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black"> Lessons</a>
+                                )}
+                                {((user && user.parent_profile && user.parent_profile.id)   && (
+                                    <a href="/child-lessons"
+                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Children Lessons</a>
+                                    )
+                                )}
+                                {user && (
+                                    <a href="/payments"
+                                       className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Payments</a>
                                 )}
                                 <a href="/logout"
                                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>
@@ -155,7 +164,11 @@ const Navbar = ({ user, notificationCount }) => {
                     )}
                     {((user && user.student_profile && user.student_profile.id) || (user && user.tutor_profile && user.tutor_profile.id)) && (
                         <a href="/pending-lessons"
-                           className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Pending Lessons</a>
+                           className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Lessons</a>
+                    )}
+                    {user && (
+                        <a href="/payments"
+                           className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Payments</a>
                     )}
                     <a href="/logout"
                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black">Logout</a>

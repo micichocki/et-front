@@ -18,7 +18,11 @@ function StudentProfile({ user }) {
     if (!user) {
       axios.get('/api/tutoring/user/me/')
           .then(response => {
-            setUserData(response.data);
+            if (!response.data.student_profile) {
+              window.location.href = '/dashboard';
+            } else {
+              setUserData(response.data);
+            }
           })
           .catch(error => {
             console.error("There was an error fetching the user data!", error);

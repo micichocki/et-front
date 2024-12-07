@@ -155,11 +155,8 @@ const PendingLessons = () => {
                             onAccept={handleAccept}
                             onReload={() => {
                                 let endpoint = '';
-                                if (user.roles && user.roles[0].id === 1) {
-                                    endpoint = '/api/tutoring/student/lessons/';
-                                } else if (user.roles && user.roles[0].id === 2) {
-                                    endpoint = '/api/tutoring/tutor/lessons/';
-                                } else if (user.roles && user.roles[0].id === 3) {
+
+                                if (user.roles && user.roles[0].id === 3) {
                                     endpoint = '/api/tutoring/parent/lessons/';
                                 }
 

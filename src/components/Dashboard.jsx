@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../axiosConfig';
-import ParentDashboard from './ParentDashboard';
 import TutorDashboard from './TutorDashboard';
 import StudentDashboard from './StudentDashboard';
+import ParentProfile from "./ParentProfile";
 
 const Dashboard = () => {
     const [data, setData] = useState(null);
@@ -35,7 +35,7 @@ const Dashboard = () => {
     }
     return (
         <div>
-            {data.roles[0].id === 3 && <ParentDashboard user={data} lessons={lessons} />}
+            {data.roles[0].id === 3 && <ParentProfile user={data} lessons={lessons} />}
             {data.roles[0].id === 2 && <TutorDashboard user={data} lessons={lessons} />}
             {data.roles[0].id === 1 && <StudentDashboard user={data} lessons={lessons} />}
         </div>

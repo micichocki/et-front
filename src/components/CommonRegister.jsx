@@ -44,10 +44,9 @@ const CommonRegister = () => {
     };
 
     return (
-        <div className='mt-12'>
-            <div className="flex flex-col items-center justify-center px-1 py-5 mx-auto md:h-screen lg:py-0">
+            <div className="flex flex-col items-center justify-center px-1 py-5 mx-auto  lg:py-0">
                 <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-                    <div className="pt-0 px-6 py-2 space-y-2 md:space-y-6 sm:p-4">
+                    <div className="pt-0 px-6 py-2 space-y-2 md:space-y-6 sm:p-4 mt-6">
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                             Create an account
                         </h1>
@@ -243,7 +242,6 @@ const CommonRegister = () => {
                     </div>
                 </div>
             </div>
-        </div>
     );
 };
 

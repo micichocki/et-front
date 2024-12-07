@@ -9,12 +9,20 @@ const LessonBooking = ({ user, recipient, isBookingPopupOpen, setIsBookingPopupO
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedChild, setSelectedChild] = useState(null);
 
     const handleLessonSubmit = async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
+        let accepted_by = "Parent"
+        if (user.roles && ((user.roles[0].id === 1) || (user.roles[0].id === 3))) {
+            accepted_by = "Tutor"
+        } else if (user.roles && user.roles[0].id === 2) {
+            accepted_by = "Student"
+        }
+
         const lessonDetails = {
-            student:  user.student_profile.id,
+            student: user.roles[0].id === 3 ? selectedChild : user.student_profile.id,
             tutor: recipient.tutor_profile.id,
             date: event.target.date.value,
             start_time: event.target.start_time.value,
@@ -22,7 +30,7 @@ const LessonBooking = ({ user, recipient, isBookingPopupOpen, setIsBookingPopupO
             subject: event.target.subject.value,
             price_per_hour: Number(event.target.preferable_price_per_hour.value),
             is_remote: isRemote,
-            accepted_by: user.roles[0].id === 1 ? 'Tutor' : 'Student',
+            accepted_by: accepted_by,
             description: event.target.description.value,
         };
         if (
@@ -69,7 +77,7 @@ const LessonBooking = ({ user, recipient, isBookingPopupOpen, setIsBookingPopupO
     return (
         isBookingPopupOpen && (
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-                <div className="bg-white p-6 rounded-lg shadow-lg relative w-1/2 border-2 border-indigo-500">
+                <div className="bg-white p-6 rounded-lg shadow-lg relative w-1/2 border-2 border-indigo-500 max-h-screen overflow-y-auto">
                     <button
                         className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
                         onClick={() => setIsBookingPopupOpen(false)}
@@ -94,6 +102,24 @@ const LessonBooking = ({ user, recipient, isBookingPopupOpen, setIsBookingPopupO
                                 </div>
                             )}
                             <form onSubmit={handleLessonSubmit}>
+                                {user.roles[0].id === 3 && (
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 text-sm mb-2">Select Child:</label>
+                                        <select
+                                            name="child"
+                                            className="w-full p-2 border border-indigo-300 rounded focus:outline-none focus:ring focus:ring-indigo-500"
+                                            required
+                                            onChange={(e) => setSelectedChild(e.target.value)}
+                                        >
+                                            <option value="">Select a child</option>
+                                            {user.parent_profile.children.map((child) => (
+                                                <option key={child.id} value={child.id}>
+                                                    {child.user_full_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm mb-2">Date:</label>
                                     <input
@@ -142,8 +168,8 @@ const LessonBooking = ({ user, recipient, isBookingPopupOpen, setIsBookingPopupO
                                         Price Range for <span
                                         className="font-semibold">{selectedSubject.subject.name}</span>:{" "}
                                         <span className="text-indigo-500">
-                                            {selectedSubject.price_min} - {selectedSubject.price_max} per hour
-                                        </span>
+                                        {selectedSubject.price_min} - {selectedSubject.price_max} per hour
+                                    </span>
                                     </div>
                                 )}
                                 <div className="mb-4">

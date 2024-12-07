@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import DatePickerComponent from './DatePickerComponent';
 import avatarImage from "../assets/images/avatar.png";
+import {useNavigate} from "react-router-dom";
 
 function TutorProfile({ user }) {
   const [userData, setUserData] = useState(user);
@@ -15,13 +16,18 @@ function TutorProfile({ user }) {
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [subjectPrices, setSubjectPrices] = useState({});
   const [avatar, setAvatar] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) {
       axios.get('/api/tutoring/user/me/')
           .then(response => {
-            setUserData(response.data);
-            setLoading(false);
+            if (!response.data.tutor_profile) {
+              navigate('/dashboard');
+            } else {
+              setUserData(response.data);
+              setLoading(false);
+            }
           })
           .catch(error => {
             console.error("There was an error fetching the user data!", error);

@@ -154,7 +154,6 @@ const StudentDashboard = ({ user, lessons = [] }) => {
                                                 className="cursor-pointer text-white-600 hover:text-white-600 transition-colors p-1 rounded"
                                                 onClick={() => {
                                                     setSelectedDay(day);
-                                                    console.log(lessonsForDay);
                                                     setSelectedDayLessons(lessonsForDay);
                                                     setShowPopup(true);
                                                 }}
